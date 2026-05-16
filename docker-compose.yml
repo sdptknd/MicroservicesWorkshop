@@ -17,6 +17,8 @@ services:
   user-service:
     build: 
       context: ./services/user-service
+    deploy:
+      replicas: 1 # Scale independently!
     environment:
       - DB_HOST=db
       - DB_PORT=5432
@@ -30,6 +32,8 @@ services:
   search-service:
     build: 
       context: ./services/search-service
+    deploy:
+      replicas: 1 # Scale independently!
     environment:
       - DB_HOST=db
       - DB_PORT=5432
@@ -42,6 +46,8 @@ services:
   booking-service:
     build: 
       context: ./services/booking-service
+    deploy:
+      replicas: 1 # Scale independently!
     environment:
       - DB_HOST=db
       - DB_PORT=5432

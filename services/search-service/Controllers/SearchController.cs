@@ -1,5 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
-using SearchService.Data;
+using SearchService.Services;
 using SearchService.Models;
 
 namespace SearchService.Controllers
@@ -8,24 +8,24 @@ namespace SearchService.Controllers
     [Route("api/search")]
     public class SearchController : ControllerBase
     {
-        private readonly SearchRepository _repository;
+        private readonly HotelSearchService _searchService;
 
-        public SearchController(SearchRepository repository)
+        public SearchController(HotelSearchService searchService)
         {
-            _repository = repository;
+            _searchService = searchService;
         }
 
         [HttpGet("hotels")]
         public async Task<IActionResult> GetHotels([FromQuery] string? city)
         {
-            var hotels = await _repository.GetHotelsAsync(city);
+            var hotels = await _searchService.GetHotelsAsync(city);
             return Ok(hotels);
         }
 
         [HttpPost("hotels/{id}/book")]
         public async Task<IActionResult> BookRooms(int id, [FromBody] BookRequest request)
         {
-            var success = await _repository.BookRoomsAsync(id, request.RoomCount);
+            var success = await _searchService.BookRoomsAsync(id, request.RoomCount);
             if (!success)
             {
                 return BadRequest(new { message = "Rooms not available or hotel not found" });

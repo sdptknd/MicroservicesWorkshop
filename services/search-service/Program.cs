@@ -5,8 +5,9 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 builder.Services.AddControllers();
 
-// Register Repository
+// Register Repository & Service
 builder.Services.AddScoped<SearchRepository>();
+builder.Services.AddScoped<HotelSearchService>();
 
 var app = builder.Build();
 
