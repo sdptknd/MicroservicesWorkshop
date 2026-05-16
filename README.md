@@ -68,12 +68,12 @@ After showing how painful the manual commands are, you can use `docker-compose` 
 
 1. **Start the infrastructure (DB & API):**
    ```bash
-   docker compose up -d --build
+   docker-compose up -d --build
    ```
 
 2. **Check the logs:**
    ```bash
-   docker compose logs -f api
+   docker-compose logs -f api
    ```
 
 ---
