@@ -1,110 +1,58 @@
-# Hotel Booking App - Step 1 (Monolith)
+# Hotel Booking App - Step 2 (Monolith Clustering & Load Balancing)
 
-This branch contains the initial Monolithic version of the backend.
+This branch demonstrates how to scale the monolithic application horizontally using Nginx as a Load Balancer.
 
-## Getting Started (The Hard Way: Pure Docker)
+## Architecture
+- **Load Balancer (Nginx)**: Runs in a container on port 80.
+- **API Cluster**: 3 identical instances of the monolithic backend.
+- **Database (PostgreSQL)**: Shared database instance.
 
-To demonstrate why `docker-compose` exists, you can run the containers manually. You must create a network, build the image, run the database, and run the API with explicitly mapped environment variables.
+## Getting Started
 
-1. **Create the network and data volume:**
-   ```bash
-   docker network create hotel-network
-   docker volume create hotel_pgdata
-   docker volume create hotel_pdfs
-   ```
-
-2. **Start the Database Container:**
-   ```bash
-   docker run -d \
-     --name hotel_db \
-     --network hotel-network \
-     -e POSTGRES_USER=postgres \
-     -e POSTGRES_PASSWORD=password \
-     -e POSTGRES_DB=hotel_db \
-     -p 5432:5432 \
-     -v $(pwd)/db-scripts:/docker-entrypoint-initdb.d \
-     -v hotel_pgdata:/var/lib/postgresql/data \
-     postgres:15-alpine
-   ```
-
-3. **Build the API Image:**
-   ```bash
-   docker build -t monolith-api:latest ./monolith
-   ```
-
-4. **Start the API Container:**
-   ```bash
-   docker run -d \
-     --name monolith_api \
-     --network hotel-network \
-     -e DB_HOST=hotel_db \
-     -e DB_PORT=5432 \
-     -e DB_USER=postgres \
-     -e DB_PASSWORD=password \
-     -e DB_NAME=hotel_db \
-     -e JWT_SECRET=mysecretkeyforhotelbooking \
-     -p 3000:3000 \
-     -v hotel_pdfs:/app/pdfs \
-     monolith-api:latest
-   ```
-
-5. **Check the logs:**
-   ```bash
-   docker logs -f monolith_api
-   ```
-
-6. **Cleanup (Before showing Docker Compose):**
-   ```bash
-   docker rm -f monolith_api hotel_db
-   docker network rm hotel-network
-   docker volume rm hotel_pgdata hotel_pdfs
-   ```
-
----
-
-## Getting Started (The Easy Way: Docker Compose)
-
-After showing how painful the manual commands are, you can use `docker-compose` to do all of the above (network, build, run, env vars) in a single command.
-
-1. **Start the infrastructure (DB & API):**
+1. **Start the clustered stack:**
    ```bash
    docker-compose up -d --build
    ```
 
-2. **Check the logs:**
+2. **Verify the cluster is running:**
    ```bash
-   docker-compose logs -f api
+   docker-compose ps
+   ```
+   *You should see one Nginx container and three API containers.*
+
+3. **Check the Load Balancer logs:**
+   ```bash
+   docker-compose logs -f nginx
    ```
 
----
-
 ## Testing with cURL
+*Note: We now use port **80** (default) instead of 3000.*
 
 ### 1. Register a User
 ```bash
-curl -X POST http://localhost:3000/api/users/register \
+curl -X POST http://localhost/api/users/register \
   -H "Content-Type: application/json" \
   -d '{"username": "testuser", "password": "password123"}'
 ```
 
 ### 2. Login (Save the token!)
 ```bash
-curl -X POST http://localhost:3000/api/users/login \
+curl -X POST http://localhost/api/users/login \
   -H "Content-Type: application/json" \
   -d '{"username": "testuser", "password": "password123"}'
 ```
-*Export the token to a variable for the next commands:*
+*Export the token:*
 `export TOKEN="your_jwt_token_here"`
 
-### 3. Search Hotels (Unauthenticated)
+### 3. Search Hotels
 ```bash
-curl -X GET "http://localhost:3000/api/search/hotels?city=New%20York"
+curl -X GET "http://localhost/api/search/hotels?city=New%20York"
 ```
 
-### 4. Create a Booking (Demonstrates synchronous block)
-*This command will hang while the "PDF generates". During this time, the entire backend is blocked.*
+### 4. Create a Booking (Watch the load balancing!)
+*Run this multiple times and check the logs (`docker-compose logs api`) to see which instance handles the request.*
 ```bash
-curl -X POST http://localhost:3000/api/bookings \
+curl -X POST http://localhost/api/bookings \
   -H "Authorization: Bearer $TOKEN" \
   -H "Content-Type: application/json" \
   -d '{"hotel_id": 1, "rooms": 1}'
@@ -112,13 +60,13 @@ curl -X POST http://localhost:3000/api/bookings \
 
 ### 5. List Your Bookings
 ```bash
-curl -X GET http://localhost:3000/api/bookings \
+curl -X GET http://localhost/api/bookings \
   -H "Authorization: Bearer $TOKEN"
 ```
 
 ### 6. Download Receipt PDF
 ```bash
-curl -X GET http://localhost:3000/api/bookings/1/receipt \
+curl -X GET http://localhost/api/bookings/1/receipt \
   -H "Authorization: Bearer $TOKEN" \
   --output receipt.pdf
 ```
