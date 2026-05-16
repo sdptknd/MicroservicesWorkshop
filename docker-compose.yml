@@ -73,7 +73,7 @@ services:
     build:
       context: ./services/worker-service
     deploy:
-      replicas: 2
+      replicas: 1
     environment:
       - DB_HOST=db
       - DB_PORT=5432
