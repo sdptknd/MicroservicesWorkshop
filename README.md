@@ -2,18 +2,6 @@
 
 This branch contains the initial Monolithic version of the backend.
 
-## Getting Started (The Easy Way: Docker Compose)
-
-1. **Start the infrastructure (DB & API):**
-   ```bash
-   docker compose up -d --build
-   ```
-
-2. **Check the logs:**
-   ```bash
-   docker compose logs -f api
-   ```
-
 ## Getting Started (The Hard Way: Pure Docker)
 
 To demonstrate why `docker-compose` exists, you can run the containers manually. You must create a network, build the image, run the database, and run the API with explicitly mapped environment variables.
@@ -61,11 +49,29 @@ To demonstrate why `docker-compose` exists, you can run the containers manually.
    docker logs -f monolith_api
    ```
 
-6. **Cleanup:**
+6. **Cleanup (Before showing Docker Compose):**
    ```bash
    docker rm -f monolith_api hotel_db
    docker network rm hotel-network
    ```
+
+---
+
+## Getting Started (The Easy Way: Docker Compose)
+
+After showing how painful the manual commands are, you can use `docker-compose` to do all of the above (network, build, run, env vars) in a single command.
+
+1. **Start the infrastructure (DB & API):**
+   ```bash
+   docker compose up -d --build
+   ```
+
+2. **Check the logs:**
+   ```bash
+   docker compose logs -f api
+   ```
+
+---
 
 ## Testing with cURL
 
@@ -90,13 +96,13 @@ curl -X POST http://localhost:3000/api/users/login \
 curl -X GET "http://localhost:3000/api/search/hotels?city=New York"
 ```
 
-### 4. Create a Booking (Demonstrates 30s synchronous block)
-*This command will hang for 30 seconds while the "PDF generates". During this time, the entire backend is blocked.*
+### 4. Create a Booking (Demonstrates synchronous block)
+*This command will hang while the "PDF generates". During this time, the entire backend is blocked.*
 ```bash
 curl -X POST http://localhost:3000/api/bookings \
   -H "Authorization: Bearer $TOKEN" \
   -H "Content-Type: application/json" \
-  -d '{"hotel_id": 1}'
+  -d '{"hotel_id": 1, "rooms": 1}'
 ```
 
 ### 5. List Your Bookings
