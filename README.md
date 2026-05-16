@@ -10,6 +10,7 @@ To demonstrate why `docker-compose` exists, you can run the containers manually.
    ```bash
    docker network create hotel-network
    docker volume create hotel_pgdata
+   docker volume create hotel_pdfs
    ```
 
 2. **Start the Database Container:**
@@ -43,6 +44,7 @@ To demonstrate why `docker-compose` exists, you can run the containers manually.
      -e DB_NAME=hotel_db \
      -e JWT_SECRET=mysecretkeyforhotelbooking \
      -p 3000:3000 \
+     -v hotel_pdfs:/app/pdfs \
      monolith-api:latest
    ```
 
@@ -55,7 +57,7 @@ To demonstrate why `docker-compose` exists, you can run the containers manually.
    ```bash
    docker rm -f monolith_api hotel_db
    docker network rm hotel-network
-   docker volume rm hotel_pgdata
+   docker volume rm hotel_pgdata hotel_pdfs
    ```
 
 ---
