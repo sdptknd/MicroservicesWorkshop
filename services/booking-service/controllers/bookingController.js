@@ -12,7 +12,10 @@ class BookingController {
       }
 
       const bookingId = await bookingService.createBooking(user_id, hotel_id, requestedRooms);
-      res.status(201).json({ message: 'Booking successful', booking_id: bookingId });
+      res.status(201).json({ 
+        message: 'Booking successful! Your receipt is being generated.', 
+        booking_id: bookingId 
+      });
     } catch (err) {
       console.error(`[Booking Controller] Error: ${err.message}`);
       

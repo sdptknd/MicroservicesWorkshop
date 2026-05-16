@@ -3,7 +3,7 @@ const db = require('../db');
 class BookingRepository {
   async createBooking(userId, hotelId) {
     const result = await db.query(
-      "INSERT INTO booking_schema.bookings (user_id, hotel_id, status) VALUES ($1, $2, 'confirmed') RETURNING id",
+      "INSERT INTO booking_schema.bookings (user_id, hotel_id, status) VALUES ($1, $2, 'PENDING') RETURNING id",
       [userId, hotelId]
     );
     return result.rows[0];

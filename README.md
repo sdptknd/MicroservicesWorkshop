@@ -1,48 +1,54 @@
-# Hotel Booking App - Step 3 (Microservices & Polyglot)
+# Hotel Booking App - Step 4 (Asynchronous Background Processing)
 
-This branch demonstrates the full decomposition of the monolith into separate microservices using different technologies.
+This branch demonstrates how to decouple slow tasks using a message queue (Redis) and a background worker.
 
 ## Architecture
-- **API Gateway (Nginx)**: Port 3000. Routes traffic based on paths:
-  - `/api/users/*` -> **User Service**
-  - `/api/search/*` -> **Search Service**
-  - `/api/bookings/*` -> **Booking Service**
-- **User Service (Node.js)**: Handles identity and JWTs.
-- **Search Service (ASP.NET Core)**: Polyglot service handling hotel data.
-- **Booking Service (Node.js)**: Handles bookings and orchestrates with Search Service via internal HTTP calls.
+- **API Gateway (Nginx)**: Port 3000.
+- **Microservices**: User, Search (.NET), and Booking Services.
+- **Message Broker (Redis)**: Uses a **Redis List** as a task queue.
+- **Worker Service (Node.js)**: Listens to Redis using a `BRPOP` loop. It handles the 30-second PDF generation in the background.
+
+## The Async Flow
+1. User sends `POST /api/bookings`.
+2. **Booking Service** creates a `PENDING` booking and pushes a task to Redis.
+3. **Booking Service** returns `201 Created` **instantly**.
+4. **Worker Service** pops the task, waits 30 seconds, generates the PDF, and updates the DB to `COMPLETED`.
 
 ## Getting Started
 
-1. **Start the microservices stack:**
+1. **Start the full async stack:**
    ```bash
    docker-compose up -d --build
    ```
 
-2. **Verify the services:**
+2. **Verify scaling:**
    ```bash
    docker-compose ps
    ```
+   *Note: We have 2 replicas of the Worker Service to demonstrate parallel background processing.*
 
 ## Testing with cURL
-*The API entry point remains port 3000.*
 
-### 1. Register/Login (User Service)
-```bash
-curl -X POST http://localhost:3000/api/users/register \
-  -H "Content-Type: application/json" \
-  -d '{"username": "testuser", "password": "password123"}'
-```
-
-### 2. Search (ASP.NET Core Service)
-```bash
-curl -X GET "http://localhost:3000/api/search/hotels?city=New%20York"
-```
-
-### 3. Create Booking (Orchestration Demo)
-*Booking Service will now call Search Service internally via HTTP to confirm availability.*
+### 1. Create a Booking
 ```bash
 curl -X POST http://localhost:3000/api/bookings \
   -H "Authorization: Bearer $TOKEN" \
   -H "Content-Type: application/json" \
   -d '{"hotel_id": 1, "rooms": 1}'
+```
+*Observe that the response is now **instant**, even though the PDF isn't ready.*
+
+### 2. Check Status
+```bash
+curl -X GET http://localhost:3000/api/bookings \
+  -H "Authorization: Bearer $TOKEN"
+```
+*Check the `status` field. It will say `PENDING` for 30 seconds before switching to `COMPLETED`.*
+
+### 3. Download Receipt
+*Wait 30 seconds before running this.*
+```bash
+curl -X GET http://localhost:3000/api/bookings/1/receipt \
+  -H "Authorization: Bearer $TOKEN" \
+  --output receipt.pdf
 ```
