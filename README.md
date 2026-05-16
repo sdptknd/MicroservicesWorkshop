@@ -6,9 +6,10 @@ This branch contains the initial Monolithic version of the backend.
 
 To demonstrate why `docker-compose` exists, you can run the containers manually. You must create a network, build the image, run the database, and run the API with explicitly mapped environment variables.
 
-1. **Create the network:**
+1. **Create the network and data volume:**
    ```bash
    docker network create hotel-network
+   docker volume create hotel_pgdata
    ```
 
 2. **Start the Database Container:**
@@ -21,6 +22,7 @@ To demonstrate why `docker-compose` exists, you can run the containers manually.
      -e POSTGRES_DB=hotel_db \
      -p 5432:5432 \
      -v $(pwd)/init.sql:/docker-entrypoint-initdb.d/init.sql \
+     -v hotel_pgdata:/var/lib/postgresql/data \
      postgres:15-alpine
    ```
 
@@ -53,6 +55,7 @@ To demonstrate why `docker-compose` exists, you can run the containers manually.
    ```bash
    docker rm -f monolith_api hotel_db
    docker network rm hotel-network
+   docker volume rm hotel_pgdata
    ```
 
 ---
