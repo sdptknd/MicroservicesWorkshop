@@ -23,7 +23,7 @@ class BookingService {
     
     // 3. Intentional blocking delay to demonstrate monolith scaling issues (30 seconds)
     console.log(`[Booking ${booking.id}] Starting synchronous PDF generation. This will block...`);
-    await sleep(30000); 
+    await sleep(3000); 
 
     // 4. Generate PDF
     const fileName = await this._generatePDFReceipt(booking.id, userId, hotelId);

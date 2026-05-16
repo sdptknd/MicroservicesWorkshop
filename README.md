@@ -21,7 +21,7 @@ To demonstrate why `docker-compose` exists, you can run the containers manually.
      -e POSTGRES_PASSWORD=password \
      -e POSTGRES_DB=hotel_db \
      -p 5432:5432 \
-     -v $(pwd)/init.sql:/docker-entrypoint-initdb.d/init.sql \
+     -v $(pwd)/db-scripts:/docker-entrypoint-initdb.d \
      -v hotel_pgdata:/var/lib/postgresql/data \
      postgres:15-alpine
    ```
