@@ -2,16 +2,69 @@
 
 This branch contains the initial Monolithic version of the backend.
 
-## Getting Started
+## Getting Started (The Easy Way: Docker Compose)
 
 1. **Start the infrastructure (DB & API):**
    ```bash
    docker compose up -d --build
    ```
 
-2. **Check the logs (especially during the 30s block):**
+2. **Check the logs:**
    ```bash
    docker compose logs -f api
+   ```
+
+## Getting Started (The Hard Way: Pure Docker)
+
+To demonstrate why `docker-compose` exists, you can run the containers manually. You must create a network, build the image, run the database, and run the API with explicitly mapped environment variables.
+
+1. **Create the network:**
+   ```bash
+   docker network create hotel-network
+   ```
+
+2. **Start the Database Container:**
+   ```bash
+   docker run -d \
+     --name hotel_db \
+     --network hotel-network \
+     -e POSTGRES_USER=postgres \
+     -e POSTGRES_PASSWORD=password \
+     -e POSTGRES_DB=hotel_db \
+     -p 5432:5432 \
+     -v $(pwd)/init.sql:/docker-entrypoint-initdb.d/init.sql \
+     postgres:15-alpine
+   ```
+
+3. **Build the API Image:**
+   ```bash
+   docker build -t monolith-api:latest ./monolith
+   ```
+
+4. **Start the API Container:**
+   ```bash
+   docker run -d \
+     --name monolith_api \
+     --network hotel-network \
+     -e DB_HOST=hotel_db \
+     -e DB_PORT=5432 \
+     -e DB_USER=postgres \
+     -e DB_PASSWORD=password \
+     -e DB_NAME=hotel_db \
+     -e JWT_SECRET=mysecretkeyforhotelbooking \
+     -p 3000:3000 \
+     monolith-api:latest
+   ```
+
+5. **Check the logs:**
+   ```bash
+   docker logs -f monolith_api
+   ```
+
+6. **Cleanup:**
+   ```bash
+   docker rm -f monolith_api hotel_db
+   docker network rm hotel-network
    ```
 
 ## Testing with cURL
