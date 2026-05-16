@@ -96,7 +96,7 @@ curl -X POST http://localhost:3000/api/users/login \
 
 ### 3. Search Hotels (Unauthenticated)
 ```bash
-curl -X GET "http://localhost:3000/api/search/hotels?city=New York"
+curl -X GET "http://localhost:3000/api/search/hotels?city=New%20York"
 ```
 
 ### 4. Create a Booking (Demonstrates synchronous block)
