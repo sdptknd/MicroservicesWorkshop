@@ -14,11 +14,17 @@ class BookingController {
       const bookingId = await bookingService.createBooking(user_id, hotel_id, requestedRooms);
       res.status(201).json({ message: 'Booking successful', booking_id: bookingId });
     } catch (err) {
-      console.error(err);
-      if (err.message === 'Not enough rooms available' || err.message === 'Hotel not found') {
-        return res.status(400).json({ error: err.message });
+      console.error(`[Booking Controller] Error: ${err.message}`);
+      
+      if (err.message === 'ROOMS_NOT_AVAILABLE') {
+        return res.status(400).json({ error: 'No rooms available for the selected hotel.' });
       }
-      res.status(500).json({ error: 'Internal server error' });
+      
+      if (err.message === 'SEARCH_SERVICE_DOWN') {
+        return res.status(503).json({ error: 'Search service is currently unavailable. Please try again later.' });
+      }
+
+      res.status(500).json({ error: 'An internal error occurred in the booking service.' });
     }
   }
 

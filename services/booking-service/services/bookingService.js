@@ -21,8 +21,10 @@ class BookingService {
     try {
       await axios.post(`${SEARCH_SERVICE_URL}/api/search/hotels/${hotelId}/book`, { roomCount });
     } catch (error) {
-      console.error('[Booking Service] Failed to verify availability:', error.message);
-      throw new Error('Rooms not available or Search Service is down');
+      if (error.response && error.response.status === 400) {
+        throw new Error('ROOMS_NOT_AVAILABLE');
+      }
+      throw new Error('SEARCH_SERVICE_DOWN');
     }
 
     // 2. Create the booking record
