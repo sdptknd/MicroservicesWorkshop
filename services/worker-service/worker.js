@@ -50,10 +50,10 @@ async function processQueue() {
       // 3. Update Database
       await pool.query(
         'UPDATE booking_schema.bookings SET status = $1, receipt_path = $2 WHERE id = $3',
-        ['COMPLETED', fileName, bookingId]
+        ['CONFIRMED', fileName, bookingId]
       );
 
-      console.log(`[Worker] Finished booking ${bookingId}. Status updated to COMPLETED.`);
+      console.log(`[Worker] Finished booking ${bookingId}. Status updated to CONFIRMED.`);
     } catch (err) {
       console.error('[Worker] Error processing job:', err);
     }
