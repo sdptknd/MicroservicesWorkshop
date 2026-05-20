@@ -1,3 +1,18 @@
+# Hotel Booking App - Step 5 (Redis Caching)
+
+This branch demonstrates how to solve read-heavy database bottlenecks using a **Cache-Aside** pattern with Redis.
+
+## Architecture Updates
+- **Search Service (.NET)**: Now uses `StackExchange.Redis` to cache search results.
+- **Message Broker & Cache (Redis)**: Redis is now acting as *both* a task queue (for the worker) and a high-speed cache.
+
+## The Caching Flow
+1. **Cache Miss**: The first time you search for a city, the service checks Redis, finds nothing, and queries the slow database (simulated 5s delay). It saves the result in Redis with a 30-second Time-To-Live (TTL).
+2. **Cache Hit**: If you search for the same city within 30 seconds, the service fetches the result directly from Redis, returning instantly (< 50ms).
+3. **Expiration**: After 30 seconds, the cache expires, ensuring the data stays fresh.
+
+---
+
 # Hotel Booking App - Step 4 (Asynchronous Background Processing)
 
 This branch demonstrates how to decouple slow tasks using a message queue (Redis) and a background worker.

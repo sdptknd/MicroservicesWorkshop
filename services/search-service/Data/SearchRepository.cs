@@ -22,7 +22,7 @@ namespace SearchService.Data
         {
             Console.WriteLine($"[Search Service] Querying database for hotels (city: {city ?? "all"})...");
             var stopwatch = System.Diagnostics.Stopwatch.StartNew();
-            // await Task.Delay(5000);
+            await Task.Delay(5000);
 
             var hotels = new List<Hotel>();
             using var connection = new NpgsqlConnection(_connectionString);
