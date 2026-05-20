@@ -20,6 +20,10 @@ namespace SearchService.Data
 
         public async Task<IEnumerable<Hotel>> GetHotelsAsync(string? city)
         {
+            Console.WriteLine($"[Search Service] Querying database for hotels (city: {city ?? "all"})...");
+            var stopwatch = System.Diagnostics.Stopwatch.StartNew();
+            // await Task.Delay(5000);
+
             var hotels = new List<Hotel>();
             using var connection = new NpgsqlConnection(_connectionString);
             await connection.OpenAsync();
@@ -48,6 +52,9 @@ namespace SearchService.Data
                     AvailableRooms = reader.GetInt32(4)
                 });
             }
+
+            stopwatch.Stop();
+            Console.WriteLine($"[Search Service] Query completed in {stopwatch.ElapsedMilliseconds}ms\n");
 
             return hotels;
         }
