@@ -63,7 +63,7 @@ services:
       - DB_PASSWORD=password
       - DB_NAME=hotel_db
       - JWT_SECRET=mysecretkeyforhotelbooking
-      - SEARCH_SERVICE_URL=http://search-service:8080
+      - SEARCH_SERVICE_URL=http://nginx-search:80
     volumes:
       - pdf_data:/app/pdfs
     depends_on:
@@ -89,18 +89,41 @@ services:
       - db
       - redis
 
-  nginx:
+  nginx-gateway:
     image: nginx:latest
-    container_name: hotel_nginx
+    container_name: hotel_nginx_gateway
     ports:
       - "3000:80"
     volumes:
-      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/gateway.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - nginx-user
+      - nginx-search
+      - nginx-booking
+
+  nginx-user:
+    image: nginx:latest
+    container_name: hotel_nginx_user
+    volumes:
+      - ./nginx/user.conf:/etc/nginx/nginx.conf:ro
     depends_on:
       - user-service
+
+  nginx-search:
+    image: nginx:latest
+    container_name: hotel_nginx_search
+    volumes:
+      - ./nginx/search.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
       - search-service
+
+  nginx-booking:
+    image: nginx:latest
+    container_name: hotel_nginx_booking
+    volumes:
+      - ./nginx/booking.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
       - booking-service
-      - worker-service
 
 volumes:
   pgdata:

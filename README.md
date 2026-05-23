@@ -1,4 +1,18 @@
-# Hotel Booking App - Step 5 (Redis Caching)
+# Hotel Booking App - Step 6 (Enterprise API Gateway & Load Balancing)
+
+This branch introduces an Enterprise-grade routing architecture, completely mimicking the separation of concerns found in advanced Kubernetes setups (like Ingress Controllers and internal Service Meshes).
+
+## Architecture Updates
+Instead of a single Nginx monolith, traffic is now split across 4 dedicated Nginx containers:
+1. **`nginx-gateway`**: The only public-facing container (Port 3000). Handles path-based routing (e.g., `/api/users` $\rightarrow$ `nginx-user`).
+2. **`nginx-user`**: Hidden internal Layer 7 Load Balancer for the User Service.
+3. **`nginx-search`**: Hidden internal Layer 7 Load Balancer for the Search Service.
+4. **`nginx-booking`**: Hidden internal Layer 7 Load Balancer for the Booking Service.
+
+**Internal Service-to-Service Communication**:
+The Booking Service now connects to `http://nginx-search:80` when asking for hotel availability, meaning internal traffic is now fully load-balanced by a dedicated Layer 7 proxy rather than relying on Docker's basic Layer 4 DNS Round-Robin.
+
+---
 
 This branch demonstrates how to solve read-heavy database bottlenecks using a **Cache-Aside** pattern with Redis.
 
