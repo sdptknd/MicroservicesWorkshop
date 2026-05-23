@@ -64,6 +64,7 @@ services:
       - DB_NAME=hotel_db
       - JWT_SECRET=mysecretkeyforhotelbooking
       - SEARCH_SERVICE_URL=http://nginx-search:80
+      - REDIS_HOST=redis
     volumes:
       - pdf_data:/app/pdfs
     depends_on:
